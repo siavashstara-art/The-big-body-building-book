@@ -178,10 +178,10 @@ export interface SupplementInfo {
   id: string;
   nameFa: string;
   nameEn: string;
-  category: 'performance' | 'herbal' | 'recovery';
+  category: 'performance' | 'herbal' | 'recovery' | 'pharmacology';
   biochemMechanismFa: string;
   optimalDosageFa: string;
-  clinicalEvidenceGrade: 'A (شواهد بالینی قوی)' | 'B (شواهد متوسط)' | 'A+ (استاندارد طلایی)';
+  clinicalEvidenceGrade: 'A (شواهد بالینی قوی)' | 'B (شواهد متوسط)' | 'A+ (استاندارد طلایی)' | 'تحلیل بالینی مهار آسیب (Clinical Harm-Reduction)';
   synergyStackFa: string;
   safetyProfileFa: string;
 }
@@ -274,5 +274,38 @@ export const SUPPLEMENT_ENCYCLOPEDIA: SupplementInfo[] = [
     clinicalEvidenceGrade: 'A (شواهد بالینی قوی)',
     synergyStackFa: 'استفاده دوره‌ای (Cycle) ۸ هفته مصرف و ۲ هفته استراحت جهت پیشگیری از سازگاری گیرنده‌ها.',
     safetyProfileFa: 'انرژی‌بخش طبیعی، بدون ایجاد افت قند خون یا افت ناگهانی انرژی.'
+  },
+  {
+    id: 'shaghaghel_boozidan_coriander',
+    nameFa: 'شقاقل، بوزیدان، تخم گشنیز و ماکا (Hormonal Balance Complex)',
+    nameEn: 'Botanical Endocrine & Fertility Support',
+    category: 'herbal',
+    biochemMechanismFa: 'مجموعه ریشه‌ها و بذرهای حاوی فیتواستروژن‌ها و لیگنان‌های تنظیم‌کننده هورمونی، تقویت ترشح گنادوتروپین‌ها، ارتقای سلامت باروری طبیعی در بانوان و آقایان و کاهش رادیکال‌های آزاد غدد جنسی.',
+    optimalDosageFa: 'دوز استاندارد ۵۰۰ تا ۱۰۰۰ میلی‌گرم عصاره خشک یا جوشانده سنتی استاندارد.',
+    clinicalEvidenceGrade: 'B (شواهد متوسط)',
+    synergyStackFa: 'همراهی با ویتامین E و روی کلاته جهت حداکثر اثربخشی آنتی‌اکسیدانی بر اسپرماتوژنز و تعادل تخمدان.',
+    safetyProfileFa: 'کاملاً گیاهی و غیرسمی؛ افراد با سابقه بیماری‌های حساس به هورمون باید پیش از مصرف با پزشک مشورت نمایند.'
+  },
+  {
+    id: 'somatropin_hgh',
+    nameFa: 'سوماتروپین / هورمون رشد انسانی (Somatropin - HGH)',
+    nameEn: 'Recombinant Human Growth Hormone (r-HGH)',
+    category: 'pharmacology',
+    biochemMechanismFa: 'پپتید متشکل از ۱۹۱ اسید آمینه ترشح‌شده از غده هیپوفیز قدامی؛ فعال‌کننده ترشح فاکتور رشد شبه‌انسولین (IGF-1) در کبد، تحریک هایپرپلازی (تکثیر سلولی جدید)، سنتز کلاژن در تاندون‌ها و لیپولیز شدید چربی‌ها.',
+    optimalDosageFa: 'بررسی علمی-آسیب‌شناسی: در طب بالینی صرفاً در نارسایی هورمون رشد کودکان و سندرم‌های کاشکسی تجویز می‌شود. مصرف ورزشی غیرپزشکی نامجاز و فوق‌العاده پرخطر است.',
+    clinicalEvidenceGrade: 'تحلیل بالینی مهار آسیب (Clinical Harm-Reduction)',
+    synergyStackFa: 'در سوءمصرف‌های ورزشی تداخلات خطرناکی با انسولین خارجی داشته که منجر به کماهای هیپوگلیسمیک یا تخریب پانکراس می‌شود.',
+    safetyProfileFa: 'عوارض سنگین مصرف خارجی: ابتلا به آکرومگالی (رشد استخوان‌های فک، پیشانی، دست‌ها و پاها)، سندرم تونل کارپال، رشد بافت‌های احشایی (ارگانومگالی/روده و قلب)، و مقاومت شدید و دائمی به انسولین (دیابت نوع ۲).'
+  },
+  {
+    id: 'anabolic_androgenic_steroids',
+    nameFa: 'استروئیدهای آنابولیک-آندروژنیک (AAS - Anabolic Steroids)',
+    nameEn: 'Anabolic-Androgenic Steroids (Clinical Analysis)',
+    category: 'pharmacology',
+    biochemMechanismFa: 'مشتقات سنتتیک مولکول تستوسترون؛ نفوذ به هسته سلول و اتصال به گیرنده‌های آندروژن (AR)، تحریک مصنوعی رونویسی DNA جهت تولید پروتئین عضلانی و احتباس شدید ازت؛ اما با فیدبک منفی و خاموشی کامل محور هیپوتالاموس-هیپوفیز-گناد (HPTA).',
+    optimalDosageFa: 'بررسی آسیب‌شناسی مهار خطر: مصرف با مقاصد زیبایی یا حجم‌گیری ورزشی توسط تمام نهادهای پزشکی جهانی محکوم است و هیچ دوز ایمنی برای افراد سالم تعریف نمی‌شود.',
+    clinicalEvidenceGrade: 'تحلیل بالینی مهار آسیب (Clinical Harm-Reduction)',
+    synergyStackFa: 'تداخلات شدید با سیستم انعقاد خون، جهش هماتوکریت و خطر سکته مغزی و قلبی.',
+    safetyProfileFa: 'عوارض ویرانگر جسمی و روحی: سرکوب ترشح تستوسترون طبیعی و آتروفی بیضه، ناباروری قطعی (Azoospermia)، هیپرتروفی نامتقارن بطن چپ قلب و آریتمی کشنده، پلیوز کبدی و تومورهای خوش‌خیم/بدخیم، ژنیکوماستی در مردان، و سندرم روان‌پریشی پس از قطع مصرف (افسردگی حاد ماژور، تمایلات خودآسیب‌رسان و اعتیاد روانی).'
   }
 ];

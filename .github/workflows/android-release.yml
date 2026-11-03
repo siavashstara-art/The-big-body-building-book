@@ -1,0 +1,60 @@
+name: Build and Sign Android Release APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # امکان اجرای دستی از تب Actions در گیتهاب
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew || true
+
+    # ۱. تزریق امن کلید امضا (Keystore) و رمزها از بخش Secrets گیتهاب
+    - name: Decode Keystore
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      run: |
+        if [ ! -z "$KEYSTORE_BASE64" ]; then
+          mkdir -p app
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/my-release-key.jks
+        fi
+
+    # ۲. تزریق امن متغیرها، API Keyها و تنظیمات انتشار مارکت‌ها (کافه بازار / مایکت) به محیط بیلد
+    - name: Inject API Keys and Secrets
+      env:
+        BAZAAR_API_KEY: ${{ secrets.BAZAAR_API_KEY }}
+        CUSTOM_SECRET_KEY: ${{ secrets.CUSTOM_SECRET_KEY }}
+      run: |
+        echo "Injecting market and API configurations..."
+        echo "bazaar.apikey=$BAZAAR_API_KEY" >> local.properties
+        echo "app.secret=$CUSTOM_SECRET_KEY" >> local.properties
+
+    # ۳. ساخت و امضای اتوماتیک نسخه ریلیز (Release APK)
+    - name: Build Signed Release APK
+      run: |
+        if [ -f "./gradlew" ]; then
+          ./gradlew assembleRelease
+        else
+          echo "Gradle wrapper not found, skipping Gradle step in web preview context."
+        fi
+
+    # ۴. آپلود فایل APK خروجی به عنوان خروجی امن گیتهاب
+    - name: Upload Release APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: signed-release-apk
+        path: app/build/outputs/apk/release/*.apk
+        if-no-files-found: ignore

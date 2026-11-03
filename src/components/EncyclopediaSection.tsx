@@ -44,7 +44,7 @@ export const EncyclopediaSection: React.FC<EncyclopediaSectionProps> = ({
 
   // Search & Filter for Supplements
   const [supplementSearch, setSupplementSearch] = useState<string>('');
-  const [supplementCategory, setSupplementCategory] = useState<'all' | 'performance' | 'herbal' | 'recovery'>('all');
+  const [supplementCategory, setSupplementCategory] = useState<'all' | 'performance' | 'herbal' | 'recovery' | 'pharmacology'>('all');
 
   // Somatotype Quick Diagnostic State
   const [wristSize, setWristSize] = useState<'thin' | 'medium' | 'thick'>('medium');
@@ -420,6 +420,7 @@ export const EncyclopediaSection: React.FC<EncyclopediaSectionProps> = ({
                 { id: 'performance', label: 'عملکرد و توان (Performance)' },
                 { id: 'herbal', label: 'گیاهان آداپتوژن و هورمونی' },
                 { id: 'recovery', label: 'ریکاوری و سیستم ایمنی' },
+                { id: 'pharmacology', label: 'تحلیل بالینی مهار آسیب (HGH و استروئیدها)' },
               ].map((c) => (
                 <button
                   key={c.id}

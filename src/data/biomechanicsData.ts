@@ -492,6 +492,13 @@ export const POWER_BADGES: { [id: string]: { titleFa: string; titleEn: string; d
     descFa: 'تسلط بر اسکلت محوری، فیبرهای عضلانی، چرخه تولید ATP و دایرةالمعارف مکمل‌ها',
     icon: 'Compass',
     category: 'biomechanics'
+  },
+  preseason_master: {
+    titleFa: 'استاد بدنسازی پیش‌فصل تیمی',
+    titleEn: 'Team Conditioning Director',
+    descFa: 'تسلط بر تمرینات همزمان (Concurrent)، شاخص H:Q همسترینگ، مکانیک فرود بسکتبال و محافظت از تاندون کشکک والیبال',
+    icon: 'ShieldAlert',
+    category: 'biomechanics'
   }
 };
 

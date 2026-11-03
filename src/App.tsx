@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TopNavbar, ActiveView } from './components/TopNavbar';
+import { AccessibilityToolbar } from './components/AccessibilityToolbar';
 import { ScriptOneFoundations } from './components/ScriptOneFoundations';
 import { ScriptTwoUpperBody } from './components/ScriptTwoUpperBody';
 import { ScriptThreeLowerBody } from './components/ScriptThreeLowerBody';
@@ -11,13 +12,64 @@ import { BookSection } from './components/BookSection';
 import { ProgressGamification } from './components/ProgressGamification';
 import { TeaserMotionStudio } from './components/TeaserMotionStudio';
 import { EncyclopediaSection } from './components/EncyclopediaSection';
+import { ScriptTenPreseason } from './components/ScriptTenPreseason';
+import { OfflineAdvancedLab } from './components/OfflineAdvancedLab';
+import { PeriWorkoutNutritionCalculator } from './components/PeriWorkoutNutritionCalculator';
 import { ExerciseDetailModal } from './components/ExerciseDetailModal';
+import { PdfExportModal } from './components/PdfExportModal';
+import { NavigationDrawer } from './components/NavigationDrawer';
+import { AuthAndPurchaseModal } from './components/AuthAndPurchaseModal';
 import { MuscleId, ExerciseBiomechanical } from './types';
-import { BIOMECHANICAL_EXERCISES, MUSCLE_GROUPS } from './data/biomechanicsData';
+import { BIOMECHANICAL_EXERCISES } from './data/biomechanicsData';
 import { playSuccessChime } from './utils/soundEffects';
+import { SupportedLanguage, setAppLanguage, getSavedAppLanguage } from './utils/i18n';
+import { getUserAuthState, UserAuthIdentity } from './utils/userAuthAndSubscription';
+import { 
+  getSavedAccessibilitySettings, 
+  saveAccessibilitySettings, 
+  applyAccessibilityToDOM, 
+  AccessibilitySettings 
+} from './utils/accessibilityState';
 
 export default function App() {
   const [activeView, setActiveView] = useState<ActiveView>('script_1');
+
+  // Accessibility & ADHD Settings State
+  const [accessSettings, setAccessSettings] = useState<AccessibilitySettings>(() => {
+    return getSavedAccessibilitySettings();
+  });
+
+  useEffect(() => {
+    applyAccessibilityToDOM(accessSettings);
+    saveAccessibilitySettings(accessSettings);
+  }, [accessSettings]);
+
+  // App Language i18n State
+  const [currentLang, setCurrentLang] = useState<SupportedLanguage>(() => {
+    return getSavedAppLanguage();
+  });
+
+  // Sync html dir & lang on mount
+  useEffect(() => {
+    setAppLanguage(currentLang);
+  }, [currentLang]);
+
+  // User Auth & Subscription State
+  const [userAuth, setUserAuth] = useState<UserAuthIdentity>(() => getUserAuthState());
+
+  const handleRefreshAuthState = () => {
+    setUserAuth(getUserAuthState());
+  };
+
+  // Drawer and Auth Modal Controls
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [authModalInitialTab, setAuthModalInitialTab] = useState<'register' | 'purchase'>('register');
+
+  const handleOpenAuthModal = (tab: 'register' | 'purchase' = 'register') => {
+    setAuthModalInitialTab(tab);
+    setShowAuthModal(true);
+  };
 
   // Badge Storage in localStorage
   const [unlockedBadges, setUnlockedBadges] = useState<string[]>(() => {
@@ -41,6 +93,9 @@ export default function App() {
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showPwaModal, setShowPwaModal] = useState<boolean>(false);
+
+  // PDF Export Modal State
+  const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -71,7 +126,6 @@ export default function App() {
   };
 
   const handleSelectMuscleDetail = (muscleId: MuscleId) => {
-    // Find representative biomechanical exercise for this muscle
     const ex = BIOMECHANICAL_EXERCISES.find(e => e.muscleId === muscleId) || BIOMECHANICAL_EXERCISES[0];
     setInspectingExercise(ex);
   };
@@ -103,7 +157,22 @@ export default function App() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onInstallPwa={handleInstallPwa}
+        onOpenPdfModal={() => setShowPdfModal(true)}
+        onOpenDrawer={() => setIsDrawerOpen(true)}
+        onOpenAuthModal={handleOpenAuthModal}
         pwaInstallable={!!deferredPrompt}
+        currentLang={currentLang}
+        onLanguageChange={(lang) => {
+          setCurrentLang(lang);
+          setAppLanguage(lang);
+        }}
+        userAuth={userAuth}
+      />
+
+      {/* Accessibility & ADHD Toolbar */}
+      <AccessibilityToolbar
+        settings={accessSettings}
+        onChangeSettings={setAccessSettings}
       />
 
       {/* Main Content Area */}
@@ -117,6 +186,18 @@ export default function App() {
         )}
 
         {/* View Switcher */}
+        {activeView === 'lab' && (
+          <OfflineAdvancedLab
+            onUnlockBadge={handleUnlockBadge}
+          />
+        )}
+
+        {activeView === 'nutrition' && (
+          <PeriWorkoutNutritionCalculator
+            onUnlockBadge={handleUnlockBadge}
+          />
+        )}
+
         {activeView === 'script_1' && (
           <ScriptOneFoundations
             isUnlocked={unlockedBadges.includes('movement_engineer')}
@@ -179,6 +260,17 @@ export default function App() {
           />
         )}
 
+        {activeView === 'script_10' && (
+          <ScriptTenPreseason
+            isUnlocked={unlockedBadges.includes('preseason_master')}
+            onBadgeUnlocked={(bid) => handleUnlockBadge(bid)}
+            onProceedNext={() => {
+              setActiveView('gym');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )}
+
         {activeView === 'encyclopedia' && (
           <EncyclopediaSection
             isUnlocked={unlockedBadges.includes('biochem_scholar')}
@@ -210,11 +302,40 @@ export default function App() {
         )}
       </main>
 
+      {/* Navigation Drawer */}
+      <NavigationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onNavigate={(view) => {
+          setActiveView(view);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        activeView={activeView}
+        userAuth={userAuth}
+        onOpenAuthModal={handleOpenAuthModal}
+        onOpenPdfModal={() => setShowPdfModal(true)}
+      />
+
+      {/* Auth & Purchase Modal */}
+      <AuthAndPurchaseModal
+        isOpen={showAuthModal}
+        initialTab={authModalInitialTab}
+        onClose={() => setShowAuthModal(false)}
+        userAuth={userAuth}
+        onRefreshAuthState={handleRefreshAuthState}
+      />
+
       {/* Exercise Detail Modal */}
       <ExerciseDetailModal
         exercise={inspectingExercise}
         onClose={() => setInspectingExercise(null)}
         onLogExercise={handleLogExerciseInGym}
+      />
+
+      {/* PDF Export Generator Modal */}
+      <PdfExportModal
+        isOpen={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
       />
 
       {/* PWA Install Guide Modal */}
@@ -234,7 +355,7 @@ export default function App() {
             </div>
             <button
               onClick={() => setShowPwaModal(false)}
-              className="w-full py-3.5 rounded-xl bg-[#ff5722] hover:bg-[#ff6d00] font-bold text-white text-sm"
+              className="w-full py-3.5 rounded-xl bg-[#ff5722] hover:bg-[#ff6d00] font-bold text-[#ffffff] text-sm"
             >
               متوجه شدم
             </button>

@@ -14,7 +14,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
-  Activity
+  Activity,
+  Video,
+  FileText,
+  Mic,
+  Globe,
+  Heart,
+  Trophy,
+  Dumbbell,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BOOK_INTRO, BOOK_CHAPTERS, INITIAL_LEITNER_CARDS, BookChapter } from '../data/bookContent';
@@ -27,26 +35,28 @@ interface BookSectionProps {
 }
 
 export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
-  // Tabs: Intro & Audio Summary | Chapters | Leitner Box
+  // Tabs: Intro & Teaser Preview | Chapters | Leitner Box
   const [activeTab, setActiveTab] = useState<'audio_intro' | 'chapters' | 'leitner'>('audio_intro');
 
   // Selected Chapter Modal / Reader
   const [selectedChapter, setSelectedChapter] = useState<BookChapter | null>(null);
 
-  // Audio Summary Player State
+  // Audio Summary Player State (Interactive Web Speech Engine)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
   const audioIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // English Audio Preview Player State
+  const [isPlayingEnglishAudio, setIsPlayingEnglishAudio] = useState(false);
 
   // Leitner Box State (5 boxes)
   const [leitnerCards, setLeitnerCards] = useState<LeitnerCard[]>(INITIAL_LEITNER_CARDS);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  // Handle Audio Summary Playback with synced paragraphs & heartbeat foley
+  // Handle Persian Audio Summary Playback with synced paragraphs & heartbeat foley
   useEffect(() => {
     if (isPlayingAudio) {
-      // Periodic heartbeat pulse sound
       const heartBeatInterval = setInterval(() => {
         playHeartbeatPulse();
       }, 3000);
@@ -60,7 +70,6 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
         0.9
       );
 
-      // Synced text paragraph advances
       const paragraphs = BOOK_INTRO.audioScenario.paragraphs;
       let pIdx = 0;
       audioIntervalRef.current = setInterval(() => {
@@ -80,7 +89,13 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
   }, [isPlayingAudio]);
 
   const toggleAudioSummary = () => {
+    if (isPlayingEnglishAudio) setIsPlayingEnglishAudio(false);
     setIsPlayingAudio(!isPlayingAudio);
+  };
+
+  const toggleEnglishAudioSummary = () => {
+    if (isPlayingAudio) setIsPlayingAudio(false);
+    setIsPlayingEnglishAudio(!isPlayingEnglishAudio);
   };
 
   // Leitner Card Handlers
@@ -94,23 +109,19 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
     const targetIdx = currentCardIndex;
 
     if (remembered) {
-      // Advance to next box (up to 5)
       updatedCards[targetIdx].box = Math.min(5, updatedCards[targetIdx].box + 1);
       playSuccessChime();
     } else {
-      // Return to box 1 for spaced repetition
       updatedCards[targetIdx].box = 1;
     }
 
     setLeitnerCards(updatedCards);
     setShowAnswer(false);
 
-    // Next card or wrap around
     if (currentCardIndex + 1 < leitnerCards.length) {
       setCurrentCardIndex(prev => prev + 1);
     } else {
       setCurrentCardIndex(0);
-      // Check if user has mastered cards in box >= 3
       const mastered = updatedCards.filter(c => c.box >= 3).length;
       if (mastered >= 5) {
         onUnlockBadge('leitner_scholar');
@@ -130,63 +141,211 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto px-3 sm:px-4 pb-14">
-      {/* Header */}
-      <div className="border-b border-[#242c3f] pb-5">
-        <div className="flex items-center gap-2 text-xs text-neutral-400 mb-2">
-          <span className="text-[#ff5722] font-semibold">بخش دوم</span>
-          <span aria-hidden="true">·</span>
-          <span>کتاب و خلاصه صوتی بیومکانیک</span>
-          <span aria-hidden="true">·</span>
-          <span>۱۵ سال پژوهش میدانی</span>
+      {/* Top Banner / Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#131726] via-[#101421] to-[#0a0d16] border border-[#ff5722]/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+        {/* Glow effect */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#ff5722]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-[#ff9800]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+          {/* Logo Asset */}
+          <div className="w-full md:w-56 shrink-0 rounded-xl overflow-hidden border border-[#ff5722]/40 shadow-xl group">
+            <img 
+              src="/src/assets/images/afarinab_ablecity_logo_1793745200381.jpg" 
+              alt="لوگوی ورزشی اکوسیستم آفرینش آفریناب و ایبل‌سیتی" 
+              className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+
+          {/* Header Content */}
+          <div className="flex-1 text-right space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-amber-400 font-medium">
+              <span className="text-[#ff5722] font-bold">اکوسیستم آفرینش آفریناب</span>
+              <span aria-hidden="true">·</span>
+              <span>Able City</span>
+              <span aria-hidden="true">·</span>
+              <span className="text-amber-300 font-semibold">فناوری FBNew Meta</span>
+              <span aria-hidden="true">·</span>
+              <span>۱۵ سال پژوهش بیومکانیک</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+              کتاب مرجع بیومکانیک زیستی و بدنسازی پیشرفته ایبل‌سیتی
+            </h1>
+
+            <p className="text-neutral-300 text-xs sm:text-sm leading-relaxed">
+              تولیدشده در اکوسیستم آفرینش آفریناب مبتنی بر معماری پیشرفته FBNew Meta؛ جایگزینی روش‌های سنتی و آسیب‌زا با قوانین دقیق فیزیک اهرم‌ها، گشتاور مفاصل و تغذیه دور تمرین.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-neutral-400">
+              <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                معماری آفلاین ۱۰۰٪ بدون نیاز به اینترنت
+              </span>
+              <span className="flex items-center gap-1 text-amber-400 font-semibold">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                همراه با بخش قدردانی از اساتید و قهرمانان جهان
+              </span>
+            </div>
+          </div>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-          کتاب مرجع و جعبه لایتنر بیومکانیک ایبل‌سیتی
-        </h1>
-        <p className="text-neutral-300 text-sm mt-1.5 leading-relaxed">
-          جایگزینی روش‌های سنتی و آسیب‌زا با قوانین دقیق فیزیک اهرم‌ها، گشتاور مفاصل و یادگیری با تکرار فاصله‌دار
-        </p>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 p-1.5 bg-[#121624] border border-[#242c40] rounded-xl overflow-x-auto">
         <button
           onClick={() => setActiveTab('audio_intro')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'audio_intro'
               ? 'bg-[#ff5722] text-white shadow-md'
               : 'text-neutral-300 hover:text-white'
           }`}
         >
-          مقدمه و ویس خلاصه‌صوتی
+          <Video className="w-3.5 h-3.5" />
+          <span>تیزر و پیش‌نمایش صوتی/ویدیویی</span>
         </button>
         <button
           onClick={() => setActiveTab('chapters')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'chapters'
               ? 'bg-[#ff5722] text-white shadow-md'
               : 'text-neutral-300 hover:text-white'
           }`}
         >
-          فصل‌های کتاب ({BOOK_CHAPTERS.length} فصل تخصصی)
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>فصل‌های کتاب ({BOOK_CHAPTERS.length} فصل تخصصی)</span>
         </button>
         <button
           onClick={() => setActiveTab('leitner')}
-          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'leitner'
               ? 'bg-[#ff5722] text-white shadow-md'
               : 'text-neutral-300 hover:text-white'
           }`}
         >
-          جعبه لایتنر اصول تمرین ({leitnerCards.length} فلش‌کارت)
+          <Layers className="w-3.5 h-3.5" />
+          <span>جعبه لایتنر اصول تمرین ({leitnerCards.length} فلش‌کارت)</span>
         </button>
       </div>
 
-      {/* TAB 1: INTRO & AUDIO SUMMARY */}
+      {/* TAB 1: BOOK PREVIEW & TEASER (ویدیو، خلاصه رایگان و فایل‌های صوتی) */}
       {activeTab === 'audio_intro' && (
-        <div className="space-y-6">
-          {/* Official Book Introduction */}
+        <div className="space-y-6 book-preview-container">
+          {/* ۱. بخش نمایش تیزر تبلیغاتی استاندارد (مشابه آپارات / کافه‌بازار) */}
+          <div className="promo-video-box bg-[#121624] border border-[#232a3e] rounded-2xl p-5 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-[#ff5722]" />
+                <h3 className="text-base sm:text-lg font-black text-white">
+                  تیزر معرفی کتاب و اکوسیستم ایبل‌سیتی
+                </h3>
+              </div>
+              <span className="text-[10px] bg-[#ff5722]/20 text-[#ff9800] px-2 py-0.5 rounded font-bold">
+                نسخه آپارات / کافه‌بازار
+              </span>
+            </div>
+
+            <div className="relative w-full overflow-hidden rounded-xl bg-black border border-[#2b354d] aspect-video shadow-lg">
+              <iframe 
+                src="https://www.aparat.com/video/video/embed/videohash/YOUR_VIDEO_HASH/vt/frame" 
+                title="تیزر معرفی کتاب ایبل سیتی"
+                className="absolute top-0 left-0 w-full h-full border-0" 
+                allowFullScreen={true}
+              />
+              {/* Fallback Overlay graphics if Aparat hash is placeholder */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4 pointer-events-none">
+                <div className="flex items-center gap-2 text-xs text-amber-400 font-bold mb-1">
+                  <Play className="w-4 h-4 fill-amber-400" />
+                  <span>تیزر موشن گرافیک سینمایی ۴۵ ثانیه‌ای</span>
+                </div>
+                <p className="text-[11px] text-neutral-300 leading-tight">
+                  بررسی قوانین فیزیک اهرم‌ها، فیزیولوژی عضلات و پیشگیری از آسیب در اکوسیستم بدنسازی ایبل‌سیتی
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ۲. خلاصه متنی رایگان کتاب (بالای صفحه برای آشنایی مخاطب) */}
+          <div className="free-summary-section bg-[#141926] border-r-4 border-[#ff5722] p-5 rounded-2xl shadow-xl space-y-2 text-right">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#ff9800]">
+              <FileText className="w-4 h-4" />
+              <h4>خلاصه کتاب (نسخه پیش‌نمایش رایگان)</h4>
+            </div>
+            <p className="text-sm text-neutral-200 leading-relaxed font-medium">
+              این کتاب حاصل ۱۵ سال تلاش، تجربه و پژوهش است که مفاهیم عمیق زندگی، تلاش از رنج و ساختار پایداری بیومکانیکی بدن را روایت می‌کند. در این بخش کوتاه با کلیات اثر، اهداف فیزیولوژیک و متدولوژی علمی ایبل‌سیتی آشنا می‌شوید.
+            </p>
+          </div>
+
+          {/* ۳. فایل‌های صوتی خلاصه (فارسی و انگلیسی) */}
+          <div className="audio-previews bg-[#121522] border border-[#252d42] p-6 rounded-2xl shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-[#21283d] pb-3">
+              <div className="flex items-center gap-2">
+                <Mic className="w-5 h-5 text-emerald-400" />
+                <h4 className="text-base font-black text-white">
+                  پادکست و خلاصه صوتی (رایگان برای پیش‌نمایش)
+                </h4>
+              </div>
+              <span className="text-xs text-neutral-400 font-mono">2 Languages Available</span>
+            </div>
+            
+            {/* صوت خلاصه فارسی (Persian Summary Audio) */}
+            <div className="space-y-2 text-right">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-neutral-200 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>خلاصه صوتی فارسی (Persian Summary Audio):</span>
+                </label>
+                <button
+                  onClick={toggleAudioSummary}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    isPlayingAudio
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-[#ff5722] hover:bg-[#ff6d00] text-white shadow-md'
+                  }`}
+                >
+                  {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                  <span>{isPlayingAudio ? 'توقف پادکست' : 'پخش گوینده صوتی'}</span>
+                </button>
+              </div>
+
+              {/* Native Audio Player with Fallback */}
+              <audio controls className="w-full rounded-xl bg-[#0b0e17] border border-[#262e45] p-1">
+                <source src="assets/audio/summary_fa.mp3" type="audio/mpeg" />
+                مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+              </audio>
+            </div>
+
+            {/* صوت خلاصه انگلیسی (English Summary Audio) */}
+            <div className="space-y-2 text-left dir-ltr border-t border-[#1a2133] pt-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-neutral-200 flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                  <span>English Summary Audio (International Edition):</span>
+                </label>
+                <button
+                  onClick={toggleEnglishAudioSummary}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    isPlayingEnglishAudio
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-md'
+                  }`}
+                >
+                  {isPlayingEnglishAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                  <span>{isPlayingEnglishAudio ? 'Stop English Audio' : 'Play Voice'}</span>
+                </button>
+              </div>
+
+              {/* Native Audio Player for English */}
+              <audio controls className="w-full rounded-xl bg-[#0b0e17] border border-[#262e45] p-1">
+                <source src="assets/audio/summary_en.mp3" type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+
+          {/* Official Book Introduction Text Box */}
           <div className="bg-[#121520] border border-[#252c3d] rounded-2xl p-6 sm:p-7 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 text-right">
               <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-center justify-center text-[#ff5722]">
                 <BookOpen className="w-5 h-5" />
               </div>
@@ -196,86 +355,62 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
               </div>
             </div>
 
-            <blockquote className="bg-[#0b0c10]/90 border-r-4 border-[#ff5722] p-5 rounded-xl text-neutral-200 text-base sm:text-lg leading-relaxed font-medium">
+            <blockquote className="bg-[#0b0c10]/90 border-r-4 border-[#ff5722] p-5 rounded-xl text-neutral-200 text-base sm:text-lg leading-relaxed font-medium text-right">
               «{BOOK_INTRO.officialIntroductionText}»
             </blockquote>
           </div>
 
-          {/* AUDIO SUMMARY PLAYER (ویس خلاصه‌صوتی) */}
-          <div className="bg-gradient-to-br from-[#181520] via-[#13111b] to-[#0f0e15] border-2 border-[#ff5722]/60 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[#ff5722]/20 text-[#ff7043]">
-                    پادکست خلاصه‌صوتی (Audio Summary)
-                  </span>
-                  <span className="text-xs text-neutral-400">
-                    افکت: موزیک ریتمیک انگیزشی + صدای ضربان قلب
-                  </span>
+          {/* Mentors & Coaches Tribute Box */}
+          <div className="bg-[#121522] border border-amber-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-right">
+            <div className="flex items-center justify-between border-b border-[#242c40] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shadow-md">
+                  <Award className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white">
-                  خلاصه شنیداری کتاب با نریشن صوتی هوشمند
-                </h3>
+                <div>
+                  <span className="text-xs text-amber-400 font-extrabold uppercase tracking-wider">لوح ادای احترام و پاسداشت اساتید</span>
+                  <h3 className="text-base sm:text-lg font-black text-white">{BOOK_INTRO.mentorsTribute.titleFa}</h3>
+                </div>
+              </div>
+              <Heart className="w-5 h-5 text-rose-500 animate-pulse hidden sm:block" />
+            </div>
+
+            <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-medium">
+              {BOOK_INTRO.mentorsTribute.descriptionFa}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Bodybuilding Mentors */}
+              <div className="bg-[#161b2a] p-5 rounded-2xl border border-[#28324a] space-y-3">
+                <div className="flex items-center gap-2 text-amber-400 border-b border-[#21293c] pb-2 text-xs font-bold">
+                  <Dumbbell className="w-4 h-4 text-[#ff5722]" />
+                  <span>اساتید و مربیان گرانقدر بدنسازی:</span>
+                </div>
+                <div className="space-y-2">
+                  {BOOK_INTRO.mentorsTribute.bodybuildingMentors.map((m, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-[#0d101a] p-3 rounded-xl border border-[#212a3f]">
+                      <span className="text-xs font-black text-white">{m.name}</span>
+                      <span className="text-[10px] text-amber-300 font-bold bg-amber-500/15 px-2.5 py-0.5 rounded-md">{m.role}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Play / Pause Toggle Button */}
-              <button
-                onClick={toggleAudioSummary}
-                className={`py-4 px-6 rounded-2xl font-extrabold text-base flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 ${
-                  isPlayingAudio
-                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30'
-                    : 'bg-[#ff5722] hover:bg-[#ff6d00] text-white shadow-[#ff5722]/30'
-                }`}
-              >
-                {isPlayingAudio ? (
-                  <>
-                    <Pause className="w-6 h-6" />
-                    <span>توقف پخش ویس</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-6 h-6 fill-current" />
-                    <span>پخش ویس خلاصه‌صوتی</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Simulated Animated Audio Waveform */}
-            <div className="h-16 bg-[#0a0a0f] border border-[#272433] rounded-xl flex items-center justify-center gap-1.5 px-4 mb-6">
-              {[12, 28, 45, 60, 35, 75, 90, 50, 65, 80, 40, 25, 70, 85, 30, 55, 70, 40, 20].map((h, i) => (
-                <div
-                  key={i}
-                  style={{
-                    height: isPlayingAudio ? `${Math.min(100, Math.max(15, (h * Math.sin(Date.now() / 200 + i) + h) / 1.5))}%` : '20%',
-                  }}
-                  className={`w-1.5 sm:w-2 rounded-full transition-all duration-150 ${
-                    isPlayingAudio ? 'bg-gradient-to-t from-[#ff5722] to-amber-400' : 'bg-neutral-700'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Synchronized Transcript Text */}
-            <div className="bg-[#0b0c12]/90 border border-[#242133] rounded-xl p-5 space-y-3">
-              <span className="text-xs text-[#ff9800] font-semibold block mb-1">
-                متن همگام‌سازی‌شده نریشن گوینده:
-              </span>
-              {BOOK_INTRO.audioScenario.paragraphs.map((para, idx) => {
-                const isCurrent = isPlayingAudio && currentParagraphIndex === idx;
-                return (
-                  <p
-                    key={para.id}
-                    className={`text-sm sm:text-base leading-relaxed transition-all duration-300 rounded-lg p-2 ${
-                      isCurrent
-                        ? 'bg-[#ff5722]/20 text-white font-bold border-r-4 border-[#ff5722]'
-                        : 'text-neutral-300'
-                    }`}
-                  >
-                    «{para.text}»
-                  </p>
-                );
-              })}
+              {/* Basketball Mentors */}
+              <div className="bg-[#161b2a] p-5 rounded-2xl border border-[#28324a] space-y-3">
+                <div className="flex items-center gap-2 text-cyan-400 border-b border-[#21293c] pb-2 text-xs font-bold">
+                  <Trophy className="w-4 h-4 text-cyan-400" />
+                  <span>اساتید و مربیان گرانقدر بسکتبال:</span>
+                </div>
+                <div className="space-y-2">
+                  {BOOK_INTRO.mentorsTribute.basketballMentors.map((m, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-[#0d101a] p-3 rounded-xl border border-[#212a3f]">
+                      <span className="text-xs font-black text-white">{m.name}</span>
+                      <span className="text-[10px] text-cyan-300 font-bold bg-cyan-500/15 px-2.5 py-0.5 rounded-md">{m.role}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
