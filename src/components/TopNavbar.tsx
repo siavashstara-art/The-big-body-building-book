@@ -11,7 +11,8 @@ export type ActiveView =
   | 'gym' 
   | 'book' 
   | 'progress' 
-  | 'teaser';
+  | 'teaser'
+  | 'encyclopedia';
 
 interface TopNavbarProps {
   activeView: ActiveView;
@@ -90,6 +91,14 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             }`}
           >
             اسکریپت ۶: ریکاوری
+          </button>
+          <button
+            onClick={() => onNavigate('encyclopedia')}
+            className={`transition-colors whitespace-nowrap py-1 ${
+              activeView === 'encyclopedia' ? 'text-[#ff5722] font-bold border-b-2 border-[#ff5722]' : 'hover:text-white'
+            }`}
+          >
+            دانشنامه تخصصی
           </button>
           <button
             onClick={() => onNavigate('gym')}
@@ -186,6 +195,14 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           }`}
         >
           اسکریپت ۶
+        </button>
+        <button
+          onClick={() => onNavigate('encyclopedia')}
+          className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors ${
+            activeView === 'encyclopedia' ? 'bg-[#ff5722] text-white' : 'bg-[#181d2a] text-neutral-300'
+          }`}
+        >
+          دانشنامه
         </button>
         <button
           onClick={() => onNavigate('gym')}

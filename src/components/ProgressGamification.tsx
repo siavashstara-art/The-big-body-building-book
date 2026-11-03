@@ -44,6 +44,7 @@ export const ProgressGamification: React.FC<ProgressGamificationProps> = ({
       case 'ShieldAlert': return <ShieldCheck className="w-6 h-6" />;
       case 'Award': return <Award className="w-6 h-6" />;
       case 'Activity': return <TrendingUp className="w-6 h-6" />;
+      case 'TrendingUp': return <TrendingUp className="w-6 h-6" />;
       case 'Mic': return <Mic className="w-6 h-6" />;
       case 'BookOpen': return <BookOpen className="w-6 h-6" />;
       default: return <Award className="w-6 h-6" />;

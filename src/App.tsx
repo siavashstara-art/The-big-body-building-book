@@ -10,6 +10,7 @@ import { GymTracker } from './components/GymTracker';
 import { BookSection } from './components/BookSection';
 import { ProgressGamification } from './components/ProgressGamification';
 import { TeaserMotionStudio } from './components/TeaserMotionStudio';
+import { EncyclopediaSection } from './components/EncyclopediaSection';
 import { ExerciseDetailModal } from './components/ExerciseDetailModal';
 import { MuscleId, ExerciseBiomechanical } from './types';
 import { BIOMECHANICAL_EXERCISES, MUSCLE_GROUPS } from './data/biomechanicsData';
@@ -175,6 +176,13 @@ export default function App() {
               setActiveView('progress');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+          />
+        )}
+
+        {activeView === 'encyclopedia' && (
+          <EncyclopediaSection
+            isUnlocked={unlockedBadges.includes('biochem_scholar')}
+            onUnlockBadge={handleUnlockBadge}
           />
         )}
 

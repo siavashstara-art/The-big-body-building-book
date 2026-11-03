@@ -485,6 +485,13 @@ export const POWER_BADGES: { [id: string]: { titleFa: string; titleEn: string; d
     descFa: 'تکمیل موفقیت‌آمیز کل ۶ اسکریپت تخصصی بیومکانیک، تغذیه بیوشیمیایی و ریکاوری پیشرفته',
     icon: 'Award',
     category: 'biomechanics'
+  },
+  biochem_scholar: {
+    titleFa: 'پژوهشگر فیزیولوژی سلولی',
+    titleEn: 'Cellular Physiology Scholar',
+    descFa: 'تسلط بر اسکلت محوری، فیبرهای عضلانی، چرخه تولید ATP و دایرةالمعارف مکمل‌ها',
+    icon: 'Compass',
+    category: 'biomechanics'
   }
 };
 
