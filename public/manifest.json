@@ -1,0 +1,29 @@
+{
+  "id": "/",
+  "name": "ایبل‌سیتی | سامانه بیومکانیک و بدنسازی علمی",
+  "short_name": "AbleCity",
+  "description": "سامانه تخصصی بیومکانیک زیستی، حرکات اصلاحی، تغذیه پاک و ردیاب باشگاهی ایبل‌سیتی برای بزرگسالان",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0c10",
+  "theme_color": "#ff5722",
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": ["fitness", "sports", "health"],
+  "icons": [
+    {
+      "src": "/src/assets/images/able_city_book_cover_1793714680771.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/src/assets/images/able_city_book_cover_1793714680771.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

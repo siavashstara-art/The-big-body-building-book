@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-vazir: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+    --font-athletic: 'Barlow Condensed', 'Vazirmatn', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-vazir);
+    background-color: #0b0c10;
+    color: #e0e2ec;
+    overflow-x: hidden;
+  }
+}
+
+.font-athletic {
+  font-family: var(--font-athletic);
+  letter-spacing: 0.02em;
+}
+
+/* Gym High Contrast Theme */
+.gym-high-contrast {
+  --tw-bg-opacity: 1;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.gym-high-contrast button {
+  border-width: 2px !important;
+  border-color: #ff9800 !important;
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #12141a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2e3d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff5722;
+}
+
+/* Biomechanical grid backdrop */
+.biomech-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 87, 34, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 87, 34, 0.05) 1px, transparent 1px);
+}

@@ -1,0 +1,6 @@
+{
+  "name": "ایبل‌سیتی | سامانه بیومکانیک و بدنسازی علمی (Able City)",
+  "description": "سامانه جامع بیومکانیک زیستی، حرکات اصلاحی، کتاب تخصصی، ردیاب تمرین باشگاهی با فرامین صوتی و تیزر تبلیغاتی ایبل‌سیتی",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
