@@ -22,7 +22,17 @@ import {
   Heart,
   Trophy,
   Dumbbell,
-  ShieldCheck
+  ShieldCheck,
+  Lock,
+  Unlock,
+  CreditCard,
+  Coins,
+  Copy,
+  Check,
+  Zap,
+  Sparkles,
+  Eye,
+  ExternalLink
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BOOK_INTRO, BOOK_CHAPTERS, INITIAL_LEITNER_CARDS, BookChapter } from '../data/bookContent';
@@ -53,6 +63,21 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
   const [leitnerCards, setLeitnerCards] = useState<LeitnerCard[]>(INITIAL_LEITNER_CARDS);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+
+  // Accessibility & ADHD Focus Mode State
+  const [fontSizeScale, setFontSizeScale] = useState<number>(100); // 100% default font scale
+  const [adhdFocusMode, setAdhdFocusMode] = useState<boolean>(false);
+
+  // Paywall & Purchase State (Persisted in localStorage)
+  const [isBookPurchased, setIsBookPurchased] = useState<boolean>(() => {
+    return localStorage.getItem('is_book_purchased') === 'true';
+  });
+
+  // Crypto Payment Panel State
+  const [showCryptoPanel, setShowCryptoPanel] = useState<boolean>(false);
+  const [txIdInput, setTxIdInput] = useState<string>('');
+  const [copiedCryptoAddress, setCopiedCryptoAddress] = useState<boolean>(false);
+  const cryptoWalletAddress = "TRX7N2v8PqXk9mY4R3zL6wW1sT8uV5jK2x";
 
   // Handle Persian Audio Summary Playback with synced paragraphs & heartbeat foley
   useEffect(() => {
@@ -98,6 +123,53 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
     setIsPlayingEnglishAudio(!isPlayingEnglishAudio);
   };
 
+  // Font Size Accessibility Handlers
+  const adjustFontSize = (delta: number) => {
+    setFontSizeScale(prev => Math.min(140, Math.max(85, prev + delta)));
+  };
+
+  // ADHD Focus Mode Handler
+  const toggleAdhdFocusMode = () => {
+    setAdhdFocusMode(!adhdFocusMode);
+  };
+
+  // Purchase Handlers
+  const applyUnlockedState = () => {
+    localStorage.setItem('is_book_purchased', 'true');
+    setIsBookPurchased(true);
+    playSuccessChime();
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#27ae60', '#ff9800', '#ffffff'],
+      });
+    } catch {
+      // fallback
+    }
+  };
+
+  const handleRialPurchase = () => {
+    playTimerBeep(true);
+    applyUnlockedState();
+  };
+
+  const handleCryptoVerification = () => {
+    if (!txIdInput.trim()) {
+      alert('لطفاً شناسه تراکنش (TxID) یا ایمیل خریدار را وارد کنید.');
+      return;
+    }
+    applyUnlockedState();
+    setShowCryptoPanel(false);
+  };
+
+  const handleCopyCrypto = () => {
+    navigator.clipboard.writeText(cryptoWalletAddress);
+    setCopiedCryptoAddress(true);
+    setTimeout(() => setCopiedCryptoAddress(false), 2000);
+  };
+
   // Leitner Card Handlers
   const currentCard = leitnerCards[currentCardIndex];
 
@@ -140,7 +212,12 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto px-3 sm:px-4 pb-14">
+    <div 
+      className={`space-y-8 max-w-4xl mx-auto px-3 sm:px-4 pb-14 transition-all duration-300 ${
+        adhdFocusMode ? 'bg-[#0f141f] p-4 sm:p-6 rounded-3xl border border-amber-500/30' : ''
+      }`}
+      style={{ fontSize: `${fontSizeScale}%` }}
+    >
       {/* Top Banner / Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#131726] via-[#101421] to-[#0a0d16] border border-[#ff5722]/30 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
         {/* Glow effect */}
@@ -191,7 +268,58 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* ۰. پنل دسترس‌پذیری و حالت ADHD (امضای اختصاصی برنامه‌های شما) */}
+      <div className="accessibility-toolbar bg-[#1b2234] border border-[#2c3752] text-white p-3.5 rounded-2xl shadow-xl flex flex-wrap gap-3 items-center justify-between">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#ff9800]">
+          <span>♿</span>
+          <span>دسترس‌پذیری و تمرکز مطالعه:</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Font Size Scaling Buttons */}
+          <div className="flex items-center bg-[#111522] rounded-xl p-1 border border-[#28324a]">
+            <button 
+              onClick={() => adjustFontSize(5)} 
+              className="px-2.5 py-1 text-xs font-black text-white hover:text-amber-400 transition-colors"
+              title="افزایش اندازه‌پذیری قلم (A+)"
+            >
+              A+
+            </button>
+            <div className="w-[1px] h-4 bg-[#28324a]" />
+            <button 
+              onClick={() => adjustFontSize(-5)} 
+              className="px-2.5 py-1 text-xs font-black text-white hover:text-amber-400 transition-colors"
+              title="کاهش اندازه‌پذیری قلم (A-)"
+            >
+              A-
+            </button>
+          </div>
+
+          {/* ADHD Focus Mode Button */}
+          <button 
+            onClick={toggleAdhdFocusMode}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+              adhdFocusMode 
+                ? 'bg-amber-500 text-slate-950 shadow-amber-500/30 font-black ring-2 ring-amber-400' 
+                : 'bg-[#ff5722] hover:bg-[#ff6d00] text-white'
+            }`}
+            title="حالت تمرکز ویژه ADHD برای خوانایی بالا و فاصله‌گذاری خطوط"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>{adhdFocusMode ? 'حالت تمرکز (فعال)' : 'حالت تمرکز (ADHD)'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ADHD Active Mode Banner Alert */}
+      {adhdFocusMode && (
+        <div className="bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs p-3 rounded-xl flex items-center gap-2 text-right">
+          <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>حالت تمرکز ADHD فعال گردید؛ فاصله‌گذاری خطوط افزایش یافته و زمینه چشمی آرام‌تر تنظیم شده است.</span>
+        </div>
+      )}
+
+      {/* Navigation Tabs */}
       <div className="flex items-center gap-2 p-1.5 bg-[#121624] border border-[#242c40] rounded-xl overflow-x-auto">
         <button
           onClick={() => setActiveTab('audio_intro')}
@@ -213,7 +341,7 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>فصل‌های کتاب ({BOOK_CHAPTERS.length} فصل تخصصی)</span>
+          <span>فصل‌های دانشنامه ({BOOK_CHAPTERS.length} فصل تخصصی)</span>
         </button>
         <button
           onClick={() => setActiveTab('leitner')}
@@ -231,17 +359,17 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
       {/* TAB 1: BOOK PREVIEW & TEASER (ویدیو، خلاصه رایگان و فایل‌های صوتی) */}
       {activeTab === 'audio_intro' && (
         <div className="space-y-6 book-preview-container">
-          {/* ۱. بخش نمایش تیزر تبلیغاتی استاندارد (مشابه آپارات / کافه‌بازار) */}
+          {/* ۱. بخش نمایش تیزر معرفی ۳۰ ثانیه‌ای کتاب (شهر توانا) */}
           <div className="promo-video-box bg-[#121624] border border-[#232a3e] rounded-2xl p-5 shadow-2xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-[#ff5722]" />
                 <h3 className="text-base sm:text-lg font-black text-white">
-                  تیزر معرفی کتاب و اکوسیستم ایبل‌سیتی
+                  تیزر معرفی کتاب و دانشنامه (شهر توانا / ایبل‌سیتی)
                 </h3>
               </div>
               <span className="text-[10px] bg-[#ff5722]/20 text-[#ff9800] px-2 py-0.5 rounded font-bold">
-                نسخه آپارات / کافه‌بازار
+                پخش آپارات / کافه‌بازار
               </span>
             </div>
 
@@ -252,11 +380,11 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
                 className="absolute top-0 left-0 w-full h-full border-0" 
                 allowFullScreen={true}
               />
-              {/* Fallback Overlay graphics if Aparat hash is placeholder */}
+              {/* Fallback Overlay graphic if video is loading */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4 pointer-events-none">
                 <div className="flex items-center gap-2 text-xs text-amber-400 font-bold mb-1">
                   <Play className="w-4 h-4 fill-amber-400" />
-                  <span>تیزر موشن گرافیک سینمایی ۴۵ ثانیه‌ای</span>
+                  <span>تیزر موشن گرافیک سینمایی ۳۰ ثانیه‌ای</span>
                 </div>
                 <p className="text-[11px] text-neutral-300 leading-tight">
                   بررسی قوانین فیزیک اهرم‌ها، فیزیولوژی عضلات و پیشگیری از آسیب در اکوسیستم بدنسازی ایبل‌سیتی
@@ -265,35 +393,35 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
             </div>
           </div>
 
-          {/* ۲. خلاصه متنی رایگان کتاب (بالای صفحه برای آشنایی مخاطب) */}
-          <div className="free-summary-section bg-[#141926] border-r-4 border-[#ff5722] p-5 rounded-2xl shadow-xl space-y-2 text-right">
+          {/* ۲. خلاصه متنی رایگان کتاب (پیش‌نمایش رایگان) */}
+          <div className="free-summary-section book-text-content bg-[#141926] border-r-4 border-[#ff5722] p-5 rounded-2xl shadow-xl space-y-2 text-right">
             <div className="flex items-center gap-2 text-xs font-bold text-[#ff9800]">
               <FileText className="w-4 h-4" />
-              <h4>خلاصه کتاب (نسخه پیش‌نمایش رایگان)</h4>
+              <h4>خلاصه دانشنامه (پیش‌نمایش رایگان)</h4>
             </div>
             <p className="text-sm text-neutral-200 leading-relaxed font-medium">
-              این کتاب حاصل ۱۵ سال تلاش، تجربه و پژوهش است که مفاهیم عمیق زندگی، تلاش از رنج و ساختار پایداری بیومکانیکی بدن را روایت می‌کند. در این بخش کوتاه با کلیات اثر، اهداف فیزیولوژیک و متدولوژی علمی ایبل‌سیتی آشنا می‌شوید.
+              این اثر حاصل سال‌ها تجربه، عبور از رنج و ساختن جهان از دل ویرانه‌هاست. در این بخش کوتاه، با چارچوب کلی تفکر و ساختار دانشنامه آشنا می‌شوید پیش از آنکه نسخه کامل آن را تهیه کنید.
             </p>
           </div>
 
-          {/* ۳. فایل‌های صوتی خلاصه (فارسی و انگلیسی) */}
+          {/* ۳. فایل‌های صوتی خلاصه دو زبانه (فارسی و انگلیسی) */}
           <div className="audio-previews bg-[#121522] border border-[#252d42] p-6 rounded-2xl shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-[#21283d] pb-3">
               <div className="flex items-center gap-2">
                 <Mic className="w-5 h-5 text-emerald-400" />
                 <h4 className="text-base font-black text-white">
-                  پادکست و خلاصه صوتی (رایگان برای پیش‌نمایش)
+                  پادکست و خلاصه صوتی کتاب (دو زبانه)
                 </h4>
               </div>
               <span className="text-xs text-neutral-400 font-mono">2 Languages Available</span>
             </div>
             
-            {/* صوت خلاصه فارسی (Persian Summary Audio) */}
+            {/* صوت خلاصه فارسی (Persian Audio) */}
             <div className="space-y-2 text-right">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-neutral-200 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span>خلاصه صوتی فارسی (Persian Summary Audio):</span>
+                  <span>خلاصه صوتی فارسی (Persian Audio):</span>
                 </label>
                 <button
                   onClick={toggleAudioSummary}
@@ -341,6 +469,127 @@ export const BookSection: React.FC<BookSectionProps> = ({ onUnlockBadge }) => {
                 Your browser does not support the audio element.
               </audio>
             </div>
+          </div>
+
+          {/* ۴. بنر معرفی متقابل (Cross-Promotion به اپلیکیشن بدنسازی) */}
+          <div className="cross-promo-banner bg-gradient-to-r from-[#0f1d2e] via-[#122439] to-[#0f1d2e] border-2 border-dashed border-[#3498db] p-6 rounded-2xl text-center space-y-3 shadow-xl">
+            <h4 className="text-base sm:text-lg font-black text-[#3498db]">
+              اکوسیستم تخصصی بدنسازی ایبل‌سیتی
+            </h4>
+            <p className="text-xs sm:text-sm leading-relaxed text-neutral-300 max-w-xl mx-auto">
+              همراه با مطالعه این دانشنامه، آیا به دنبال تمرینات اصولی، ردیاب باشگاهی و بیومکانیک هستید؟ اپلیکیشن «بدنسازی برای همه رشته‌ها» را امتحان کنید!
+            </p>
+            <a 
+              href="market://details?id=ir.ablecity.bodybuilding" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#3498db] hover:bg-[#2980b9] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg transition-transform active:scale-95"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>نصب اپلیکیشن بدنسازی (کافه‌بازار / مایکت)</span>
+            </a>
+          </div>
+
+          {/* ۵. بخش قفل‌شده کتاب (Paywall) و سیستم خرید ریالی / رمزارز */}
+          <div id="locked-content-area" className="space-y-4">
+            <div id="preview-content" className="relative rounded-2xl overflow-hidden border border-[#2c3750] bg-[#121624] p-6 space-y-3 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[#21293f] pb-3">
+                <h3 className={`text-base font-bold flex items-center gap-2 ${isBookPurchased ? 'text-emerald-400' : 'text-rose-500'}`}>
+                  {isBookPurchased ? <Unlock className="w-5 h-5 text-emerald-400" /> : <Lock className="w-5 h-5 text-rose-500" />}
+                  <span>{isBookPurchased ? 'متن کامل دانشنامه (نسخه خریداری شده)' : 'متن کامل دانشنامه (قفل شده)'}</span>
+                </h3>
+                {isBookPurchased && (
+                  <span className="text-xs bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-lg font-bold border border-emerald-500/40">
+                    دسترسی آزاد نامحدود
+                  </span>
+                )}
+              </div>
+
+              {/* Blurred Text Preview if locked */}
+              <div className={`p-4 rounded-xl leading-relaxed text-sm transition-all duration-300 ${
+                isBookPurchased 
+                  ? 'bg-[#161c2e] text-neutral-100 border border-emerald-500/30' 
+                  : 'bg-[#0d101a] text-neutral-400 blur-md select-none pointer-events-none'
+              }`}>
+                {isBookPurchased ? (
+                  <p className="leading-relaxed">
+                    [متن کامل و اصلی کتاب و دانشنامه شهر توانا] تمام فصل‌ها، پادکست‌های صوتی کامل، فرمول‌های بیومکانیک زیستی و فایل‌های ضمیمه برای شما آزاد شده است. از مطالعه این اثر اثرگذار لذت ببرید.
+                  </p>
+                ) : (
+                  <p>
+                    متن کامل فصل‌ها، جزئیات عمیق اهرم‌های بیومکانیک، فیزیولوژی سلولی هایپرتروفی و دسترسی کامل به فایل‌های صوتی اصلی پس از ثبت‌نام و خرید اشتراک باز خواهد شد.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* دکمه‌های خرید (ریالی و رمزارز) */}
+            {!isBookPurchased && (
+              <div id="purchase-lock-box" className="text-center bg-[#131826] border border-[#29344d] p-6 rounded-2xl space-y-4 shadow-2xl">
+                <div>
+                  <h4 className="text-base font-black text-white">خرید و باز کردن کامل کتاب</h4>
+                  <p className="text-xs text-neutral-400 mt-1">انتخاب روش پرداخت برای کاربران داخل و خارج از کشور:</p>
+                </div>
+                
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button 
+                    onClick={handleRialPurchase}
+                    className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white px-5 py-3 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 border border-emerald-400/40"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>پرداخت ریالی (۱۵۰,۰۰۰ تومان - بازار/مایکت)</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setShowCryptoPanel(!showCryptoPanel)}
+                    className="bg-amber-600 hover:bg-amber-500 active:scale-95 text-white px-5 py-3 rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-2 border border-amber-400/40"
+                  >
+                    <Coins className="w-4 h-4" />
+                    <span>International Crypto Payment ($4.99 USDT)</span>
+                  </button>
+                </div>
+
+                {/* کادر پرداخت رمزارز (USDT TRC20 Panel) */}
+                {showCryptoPanel && (
+                  <div id="crypto-payment-panel" className="bg-[#0b0e17] border border-[#2f3c59] p-5 rounded-xl text-center space-y-3 max-w-md mx-auto animate-in fade-in">
+                    <p className="text-xs font-bold text-neutral-300 dir-ltr">
+                      Send $4.99 USDT (TRC20) to this wallet:
+                    </p>
+
+                    <div className="flex items-center gap-2 bg-[#171d2e] p-2 rounded-lg border border-[#303d5c]">
+                      <input 
+                        type="text" 
+                        readOnly 
+                        value={cryptoWalletAddress} 
+                        className="w-full bg-transparent text-amber-300 font-mono text-center text-xs outline-none dir-ltr"
+                      />
+                      <button 
+                        onClick={handleCopyCrypto}
+                        className="p-1.5 rounded bg-[#27324d] hover:bg-[#344368] text-white text-xs transition-colors shrink-0"
+                        title="Copy Wallet Address"
+                      >
+                        {copiedCryptoAddress ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+
+                    <input 
+                      type="text" 
+                      value={txIdInput}
+                      onChange={(e) => setTxIdInput(e.target.value)}
+                      placeholder="Enter TxID / Email" 
+                      className="w-full bg-[#171d2e] border border-[#2d3a57] rounded-lg p-2.5 text-xs text-white placeholder-neutral-500 text-center outline-none focus:border-[#3498db] transition-colors"
+                    />
+
+                    <button 
+                      onClick={handleCryptoVerification}
+                      className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2.5 rounded-lg text-xs font-bold transition-all shadow-md"
+                    >
+                      تأیید و بازگشایی کتاب
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Official Book Introduction Text Box */}
